@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Giorni lavorati</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Giorni">
+<meta name="theme-color" content="#fbfbf9">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+<style id="css">
+/* VOICE: essenziale, un gesto al giorno
+   IDEA: il timbro del cartellino: premi e il giorno è segnato
+   PICTURE: un grande bottone rotondo, con le altre voci in colonna accanto
+   COLOUR and TYPE: bianco, nero, blu timbro più un colore per voce; Archivo
+   LAYOUT: data in alto, bottone e voci affiancati, il mese da sfogliare sotto */
+:root{color-scheme:light dark;--bg:light-dark(#fbfbf9,#121418);--ink:light-dark(#15171a,#eceef0);--mute:light-dark(#7a7f87,#8e949d);--line:light-dark(#e2e3df,#2c3038);--on:light-dark(#fff,#0d1030);
+--lav:light-dark(#2f45f0,#7d8cff);--mezza:light-dark(#6f7ff5,#a3adff);--ferie:light-dark(#0b8f7d,#3fcfb9);--malattia:light-dark(#d4452f,#ff7a63);--permesso:light-dark(#b07800,#f0b93a);--abort:light-dark(#7a4bd6,#b893ff)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Archivo,system-ui,sans-serif;overflow-x:clip;font-variant-numeric:tabular-nums}
+main{min-height:100vh;min-height:100dvh;padding-top:max(32px,env(safe-area-inset-top)) !important;padding-bottom:max(32px,env(safe-area-inset-bottom)) !important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(20px,4vh,36px);padding:32px 16px;text-align:center}
+.head{display:flex;flex-direction:column;align-items:center;gap:2px}
+.date{font-size:clamp(22px,4vw,30px);font-weight:600;margin:0;text-transform:capitalize}
+.link{border:0;background:none;color:var(--lav);font:600 15px Archivo,system-ui,sans-serif;min-height:36px;padding:0 8px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.pad{display:flex;align-items:center;justify-content:center;gap:clamp(20px,4vw,40px)}
+#btn{--c:var(--lav);width:min(62vw,280px);aspect-ratio:1;flex:none;border-radius:50%;border:0;background:var(--c);color:var(--on);font:800 clamp(22px,5.5vw,30px)/1.1 Archivo,system-ui,sans-serif;cursor:pointer;box-shadow:0 18px 40px -14px color-mix(in srgb,var(--c) 70%,transparent);padding:24px}
+#btn.done{background:transparent;color:var(--c);box-shadow:inset 0 0 0 4px var(--c)}
+#btn small{display:block;font-size:15px;font-weight:400;margin-top:8px;opacity:.8}
+.side{display:flex;flex-direction:column;gap:8px}
+.side button{--c:var(--ink);min-height:44px;padding:0 16px 0 12px;border-radius:22px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:600 15px Archivo,system-ui,sans-serif;cursor:pointer;display:flex;align-items:center;gap:9px;white-space:nowrap}
+.side button i{width:12px;height:12px;border-radius:50%;background:var(--c);flex:none}
+.side button:hover{border-color:var(--c)}
+.side button[aria-pressed=true]{background:var(--c);border-color:var(--c);color:var(--on)}
+.side button[aria-pressed=true] i{background:var(--on)}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:4px}
+@media(max-width:600px){.pad{flex-direction:column}.side{flex-direction:row;flex-wrap:wrap;justify-content:center;max-width:360px}}
+.month{display:flex;flex-direction:column;align-items:center;gap:12px}
+.mnav{display:flex;align-items:center;gap:10px}
+.mnav button{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);background:transparent;color:var(--ink);font-size:20px;cursor:pointer}
+.mnav span{min-width:9.5em;font-weight:600;font-size:18px;text-transform:capitalize}
+.count{font-size:17px;color:var(--mute);margin:0}.count b{color:var(--ink);font-size:22px}
+.extra{font-size:14px;color:var(--mute);margin:-6px 0 0}
+.wd,.dots{display:grid;grid-template-columns:repeat(7,40px);gap:6px;justify-content:center}
+.wd span{font-size:12px;color:var(--mute)}
+.dots button{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:transparent;font:500 14px Archivo,system-ui,sans-serif;color:var(--ink);cursor:pointer;padding:0}
+.dots button[data-t]{background:var(--c);border-color:var(--c);color:var(--on)}
+.dots button.today{border-color:var(--ink);border-width:2px}
+.dots button.sel{outline:3px solid var(--ink);outline-offset:2px}
+.dots button.fut{color:var(--mute)}
+@media(max-width:360px){.wd,.dots{grid-template-columns:repeat(7,36px);gap:4px}.dots button{width:36px;height:36px}}
+.hint{font-size:13px;color:var(--mute);margin:0}
+.bk{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.status{font-size:13px;color:var(--mute);min-height:20px;margin:0}
+@media(prefers-reduced-motion:no-preference){#btn,.side button,.dots button{transition:transform .15s,background .2s}#btn:active,.side button:active,.dots button:active{transform:scale(.94)}}
+</style></head><body>
+<div id="root">
+<main>
+  <div class="head">
+    <p class="date" id="date">Oggi</p>
+    <button class="link" id="back" hidden>Torna a oggi</button>
+  </div>
+  <div class="pad">
+    <button id="btn">Ho lavorato oggi</button>
+    <div class="side" id="side" role="group" aria-label="Altre voci"></div>
+  </div>
+  <div class="month">
+    <div class="mnav"><button id="prev" aria-label="Mese precedente">‹</button><span id="mname">Mese</span><button id="next" aria-label="Mese successivo">›</button></div>
+    <p class="count" id="count"></p>
+    <p class="extra" id="extra"></p>
+    <div class="wd"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
+    <div class="dots" id="dots"></div>
+    <p class="hint">Tocca un giorno per segnarlo o correggerlo.</p>
+  </div>
+  <div class="bk"><button class="link" id="exp">Salva backup</button><button class="link" id="imp">Ripristina backup</button><input type="file" id="file" accept=".json,application/json" hidden></div>
+  <p class="status" id="status" role="status"></p>
+</main>
+</div>
+<script id="app">
+{
+const $=id=>document.getElementById(id);
+const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+const GGL=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+const TIPI={lav:'Lavorato',mezza:'Mezza giornata',ferie:'Ferie',malattia:'Malattia',permesso:'Permesso',abort:'Abort'};
+const ALTRE=['mezza','ferie','malattia','permesso','abort'];
+let S=null;try{S=JSON.parse(localStorage.getItem('gl-data')||'null')}catch(e){}
+if(!S)S={days:{'2026-11-25':{t:'abort'}},ts:0};
+S.days=S.days||{};
+const pad=n=>String(n).padStart(2,'0');
+const key=(y,m,d)=>y+'-'+pad(m+1)+'-'+pad(d);
+const now=new Date();
+const TODAY=key(now.getFullYear(),now.getMonth(),now.getDate());
+let sel=TODAY;
+try{const s=JSON.parse(sessionStorage.getItem('gl-sel')||'null');if(s&&Date.now()-s.at<600000&&/^\d{4}-\d\d-\d\d$/.test(s.k))sel=s.k}catch(e){}
+let vy=+sel.slice(0,4),vm=+sel.slice(5,7)-1;
+const tipo=k=>S.days[k]&&TIPI[S.days[k].t]?S.days[k].t:'';
+function keepSel(){try{sessionStorage.setItem('gl-sel',JSON.stringify({k:sel,at:Date.now()}))}catch(e){}}
+function render(){
+  const[y,m,d]=sel.split('-').map(Number),dt=new Date(y,m-1,d),isT=sel===TODAY;
+  $('date').textContent=isT?GGL[dt.getDay()]+' '+d+' '+MESI[m-1]:GGL[dt.getDay()]+' '+d+' '+MESI[m-1]+(y!==now.getFullYear()?' '+y:'');
+  $('back').hidden=isT;
+  const t=tipo(sel),b=$('btn');
+  b.className=t?'done':'';
+  b.style.setProperty('--c','var(--'+(t||'lav')+')');
+  b.innerHTML=t?TIPI[t]+' ✓<small>tocca per annullare</small>':(isT?'Ho lavorato oggi':'Ho lavorato');
+  $('side').innerHTML=ALTRE.map(a=>'<button data-t="'+a+'" style="--c:var(--'+a+')" aria-pressed="'+(t===a)+'"><i></i>'+TIPI[a]+'</button>').join('');
+  $('mname').textContent=MESI[vm]+' '+vy;
+  const pref=vy+'-'+pad(vm+1)+'-',c={};
+  for(const k in S.days)if(k.startsWith(pref)){const x=tipo(k);if(x)c[x]=(c[x]||0)+1}
+  const n=(c.lav||0)+(c.mezza||0);
+  $('count').innerHTML='Giorni lavorati: <b>'+n+'</b>'+(c.mezza?' (di cui '+c.mezza+' mezze)':'');
+  const ex=['ferie','malattia','permesso','abort'].filter(a=>c[a]).map(a=>TIPI[a]+' '+c[a]);
+  $('extra').textContent=ex.join(' · ');$('extra').style.display=ex.length?'':'none';
+  const first=(new Date(vy,vm,1).getDay()+6)%7,len=new Date(vy,vm+1,0).getDate();
+  let h='';for(let i=0;i<first;i++)h+='<span></span>';
+  for(let dd=1;dd<=len;dd++){const k=key(vy,vm,dd),x=tipo(k);
+    h+='<button data-k="'+k+'"'+(x?' data-t="'+x+'" style="--c:var(--'+x+')"':'')+' class="'+(k===TODAY?'today ':'')+(k===sel?'sel ':'')+(k>TODAY?'fut':'')+'" aria-label="'+dd+' '+MESI[vm]+(x?', '+TIPI[x]:'')+'">'+dd+'</button>'}
+  $('dots').innerHTML=h;
+}
+function persist(){
+  S.ts=Date.now();
+  try{localStorage.setItem('gl-data',JSON.stringify(S));$('status').textContent=''}catch(e){$('status').textContent='Impossibile salvare su questo telefono.'}
+  render();
+}
+function set(t){if(tipo(sel)===t)delete S.days[sel];else S.days[sel]={t};persist()}
+$('btn').onclick=()=>{if(tipo(sel)){delete S.days[sel];persist()}else set('lav')};
+$('side').onclick=e=>{const b=e.target.closest('[data-t]');if(b)set(b.dataset.t)};
+$('dots').onclick=e=>{const b=e.target.closest('[data-k]');if(!b)return;sel=b.dataset.k;keepSel();render();window.scrollTo({top:0,behavior:'smooth'})};
+function go(dm){vm+=dm;if(vm<0){vm=11;vy--}if(vm>11){vm=0;vy++}render()}
+$('prev').onclick=()=>go(-1);$('next').onclick=()=>go(1);
+$('back').onclick=()=>{sel=TODAY;vy=now.getFullYear();vm=now.getMonth();keepSel();render()};
+render();
+$('exp').onclick=()=>{const b=new Blob([JSON.stringify(S,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='giorni-lavorati-'+TODAY+'.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);$('status').textContent='Backup creato: tienilo in File o iCloud.'};
+$('imp').onclick=()=>$('file').click();
+$('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d||typeof d.days!=='object')throw 0;const n=Object.keys(d.days).length;S.days=Object.assign({},S.days,d.days);persist();$('status').textContent='Ripristinati '+n+' giorni.'}catch(err){$('status').textContent='File di backup non valido.'}e.target.value=''};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){const n=new Date();if(n.toDateString()!==now.toDateString())location.reload()}});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body></html>
